@@ -1,2 +1,2 @@
 # convpy
-Toy script that applies convolution to images
+Toy script to play with image processing in Python
