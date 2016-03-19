@@ -12,6 +12,16 @@ def brighten(img, val):
     g = np.vectorize(lambda x: min(x + int(val), 255), otypes=[np.uint8])
     return g(img)
 
+
+def greyscale(img, _=True):
+
+    cols, rows, d = img.shape
+    return np.array(
+        [sum(img[col, row])/d
+        for col in range(cols) for row in range(rows)],
+        dtype=np.uint8).reshape(cols,rows)
+
+
 def process(img, args):
     new_img = {}
     for key, val in vars(args).items():
@@ -29,7 +39,11 @@ def read_image(img_filename):
 def display_img(img):
     for key, val in img.items():
         plt.axis("off")
-        plt.imshow(cv2.cvtColor(val, cv2.COLOR_BGR2RGB))
+        # Color image
+        if len(val.shape) > 2:
+            plt.imshow(cv2.cvtColor(val, cv2.COLOR_BGR2RGB))
+        else:
+            plt.imshow(val, cmap="Greys_r")
         plt.show()
 
 

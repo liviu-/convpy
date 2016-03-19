@@ -7,6 +7,7 @@ def get_args():
             "image", type=str,
             help="Image path to image to be processed")
     parser.add_argument("-c", "--convolve", help="apply convolution to the image", action="store_true")
+    parser.add_argument("-bw", "--greyscale", help="turn the image to greyscale", action="store_true")
     parser.add_argument("-b", "--brighten", help="brighten the image")
 
     args = parser.parse_args()
