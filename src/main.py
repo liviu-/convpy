@@ -29,7 +29,7 @@ def gaussian_kernel(sigma, size):
 def edges(img, val=None):
     kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]], np.int32)
     # Sobel
-    #kernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], np.float64)
+    kernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], np.float64)
     return convolve(img, kernel)
 
 
@@ -41,7 +41,12 @@ def gaussian_blur(img, val):
 
 def convolve(img, kernel):
     """Discrete convolution"""
-    cols, rows, d = img.shape
+    # Color image
+    if len(img.shape) > 2:
+        cols, rows, d = img.shape
+    else:
+        cols, rows = img.shape
+        d = 1
     k_cols, k_rows = kernel.shape
     extend_k_cols, extend_k_rows = (int(math.floor(k_cols/2)),
                                     int(math.floor(k_rows/2)))
@@ -51,19 +56,26 @@ def convolve(img, kernel):
     new_img = np.array(
         [
          [sum(
-             (img[col + i, row + j, dim] * 
+             (img[col + i, row + j] * 
               kernel[i + extend_k_cols, j + extend_k_rows]) 
              for i in range(-extend_k_cols, extend_k_cols + 1)
              for j in range(-extend_k_rows, extend_k_rows + 1)
              )
-          for dim in range(d)
           ]
         for col in range(extend_k_cols, cols - extend_k_cols) 
         for row in range(extend_k_rows, rows - extend_k_rows)
         ],
-        dtype=np.int32).reshape(cols - extend_k_cols - 1,
-                                rows - extend_k_rows - 1, d)
-    return new_img
+        dtype=np.int32)    
+
+    return (new_img.reshape(cols - extend_k_cols - 1,
+                           rows - extend_k_rows - 1,
+                           d)
+             if d > 1 else
+            new_img.reshape(cols - extend_k_cols - 1,
+                            rows - extend_k_rows - 1)
+            )
+
+
 
 
 def brighten(img, val):
@@ -83,7 +95,7 @@ def process(img, args):
     new_img = {}
     for key, val in vars(args).items():
         if key != 'image' and val:
-            new_img[key] = globals()[key](img, val)
+            img = globals()[key](img, val)
 
     return (new_img or img)
     
@@ -102,19 +114,14 @@ def normalize_for_display(img):
 
 
 def display_img(img):
-    if img.items:
-        for key, val in img.items():
-            plt.axis("off")
-            # Color image
-            img = normalize_for_display(val)
-            if len(img.shape) > 2:
-                plt.imshow(img.astype(np.uint8))
-            else:
-                plt.imshow(img, cmap="Greys_r")
-            plt.show()
+    plt.axis("off")
+    # Color image
+    img = normalize_for_display(img)
+    if len(img.shape) > 2:
+        plt.imshow(img.astype(np.uint8))
     else:
-        plt.imshow(img)
-        plt.show()
+        plt.imshow(img, cmap="Greys_r")
+    plt.show()
 
 
 def main():
